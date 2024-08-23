@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Your Collage</title>
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #f4f7f6;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .navbar {
+            background-color: #333;
+            color: white;
+            padding: 15px;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .navbar .logo {
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .navbar .nav-links a {
+            color: white;
+            text-decoration: none;
+            margin-left: 20px;
+            font-size: 18px;
+        }
+
+        .collage-container {
+            display: flex;
+            margin-top: 20px;
+        }
+
+        .image-gallery {
+            flex: 1;
+            max-width: 200px;
+            margin-right: 20px;
+            border-right: 1px solid #ddd;
+            padding-right: 20px;
+            overflow-y: auto;
+            max-height: 80vh;
+        }
+
+        .image-gallery h2 {
+            font-size: 20px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .image-gallery img {
+            width: 100%;
+            max-width: 150px;
+            cursor: pointer;
+            margin-bottom: 10px;
+            border: 2px solid transparent;
+            padding: 5px;
+            background-color: #fff;
+            transition: border-color 0.3s ease;
+        }
+
+        .image-gallery img:hover {
+            border-color: #007bff;
+        }
+
+        .canvas-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        canvas {
+            border: 1px solid #ccc;
+            background-color: white;
+            margin-bottom: 20px;
+        }
+
+        .button {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            margin-top: 20px;
+            text-align: center;
+            cursor: pointer;
+        }
+
+        .button:hover {
+            background-color: #0056b3;
+        }
+
+        #rosetacodeID {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #333;
+            background-color: #f9f9f9;
+            width: 100%;
+            text-align: center;
+            font-family: monospace;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <div class="logo">Photo Collage Maker</div>
+        <div class="nav-links">
+            <a href="index.html" class="nav-link">Home</a>
+            <a href="collage.html" class="nav-link">Create Collage</a>
+            <a href="checkout.html" class="nav-link">Checkout</a>
+        </div>
+    </div>
+
+    <div class="collage-container">
+        <!-- Image Library -->
+        <div class="image-gallery">
+            <h2>Image Library</h2>
+            <div id="imageGallery">
+                <!-- Images will be dynamically loaded here -->
+            </div>
+        </div>
+
+        <!-- Canvas for Front and Back -->
+        <div class="canvas-container">
+            <canvas id="frontCanvas"></canvas>
+            <div id="rosetacodeID">Roseta Code: </div>
+            <button id="continueCheckout" class="button">Continue to Checkout</button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const dpi = 96; // Dots per inch
+
+            // Letter size in inches (11" x 8.5") for horizontal orientation
+            const letterWidthInches = 11;
+            const letterHeightInches = 8.5;
+
+            // Canvas dimensions in pixels
+            const canvasWidth = letterWidthInches * dpi;
+            const canvasHeight = letterHeightInches * dpi;
+
+            // Credit card size in inches converted to pixels
+            const cardWidthInches = 3.375;
+            const cardHeightInches = 2.125;
+            const cardWidth = cardWidthInches * dpi;
+            const cardHeight = cardHeightInches * dpi;
+
+            // Canvas
+            const frontCanvas = document.getElementById('frontCanvas');
+
+            // Set canvas dimensions
+            frontCanvas.width = canvasWidth;
+            frontCanvas.height = canvasHeight;
+
+            const ctxFront = frontCanvas.getContext('2d');
+
+            // Roseta code display
+            const rosetaCodeElement = document.getElementById('rosetacodeID');
+            let rosetaCode = '';
+
+            // Grid layout based on the provided layout
+            const grid = [
+                { id: 1, x: 0, y: 0, width: 4 * dpi, height: 3 * dpi },   // Top-left
+                { id: 2, x: 4 * dpi, y: 0, width: 4 * dpi, height: 3 * dpi }, // Top-right
+                { id: 3, x: 8 * dpi, y: 0, width: 3 * dpi, height: 3 * dpi }, // Top-right small
+                { id: 4, x: 0, y: 3 * dpi, width: 4 * dpi, height: 3 * dpi },   // Bottom-left
+                { id: 5, x: 4 * dpi, y: 3 * dpi, width: 4 * dpi, height: 3 * dpi }, // Bottom-right
+                { id: 6, x: 8 * dpi, y: 3 * dpi, width: 3 * dpi, height: 3 * dpi }, // Bottom-right small
+                { id: 7, x: 0, y: 6 * dpi, width: 5.5 * dpi, height: 2.5 * dpi }, // Wide bottom-left
+                { id: 8, x: 5.5 * dpi, y: 6 * dpi, width: 5.5 * dpi, height: 2.5 * dpi } // Wide bottom-right
+            ];
+
+            // Function to update the roseta code
+            function updateRosetaCode(regionId, imageId) {
+                // Encode regionId:imageId|regionId:imageId|...
+                const existingEntryIndex = rosetaCode.split('|').findIndex(entry => entry.startsWith(`${regionId}:`));
+                if (existingEntryIndex !== -1) {
+                    // Replace existing entry
+                    const entries = rosetaCode.split('|');
+                    entries[existingEntryIndex] = `${regionId}:${imageId}`;
+                    rosetaCode = entries.join('|');
+                } else {
+                    // Add new entry
+                    if (rosetaCode) {
+                        rosetaCode += `|${regionId}:${imageId}`;
+                    } else {
+                        rosetaCode = `${regionId}:${imageId}`;
+                    }
+                }
+                rosetaCodeElement.textContent = `Roseta Code: ${rosetaCode}`;
+
+                // Store the rsid code in localStorage
+                localStorage.setItem('rsidCode', rosetaCode);
+            }
+
+            // Optional: Background color for the canvases
+            ctxFront.fillStyle = "#fff";
+            ctxFront.fillRect(0, 0, canvasWidth, canvasHeight);
+
+            // Draw each grid cell
+            grid.forEach(region => {
+                ctxFront.strokeStyle = "#000";
+                ctxFront.lineWidth = 1;
+                ctxFront.strokeRect(region.x, region.y, region.width, region.height);
+            });
+
+            // Array of image objects representing the tiles
+            const images = [
+                { id: 'img1', src: 'assets/tiles/tile1.png' },
+                { id: 'img2', src: 'assets/tiles/tile2.png' },
+                { id: 'img3', src: 'assets/tiles/tile3.png' },
+                { id: 'img4', src: 'assets/tiles/tile4.png' },
+                { id: 'img5', src: 'assets/tiles/tile5.png' },
+                { id: 'img6', src: 'assets/tiles/tile6.png' },
+                // Add more image objects as needed
+            ];
+
+            // Function to load the image gallery
+            function loadGallery() {
+                images.forEach(image => {
+                    const imgElement = document.createElement('img');
+                    imgElement.src = image.src;
+                    imgElement.id = image.id;
+                    imgElement.classList.add('gallery-image');
+                    imgElement.setAttribute('draggable', true);
+                    imgElement.addEventListener('dragstart', dragStart);
+                    imageGallery.appendChild(imgElement);
+                });
+            }
+
+            // Drag and Drop Handlers
+            function allowDrop(event) {
+                event.preventDefault();
+            }
+
+            function dragStart(event) {
+                event.dataTransfer.setData('text/plain', event.target.id);
+            }
+
+            function drop(event) {
+                event.preventDefault();
+                const imageId = event.dataTransfer.getData('text/plain');
+                const imgSrc = images.find(img => img.id === imageId).src;
+                const imgElement = new Image();
+                imgElement.src = imgSrc;
+                imgElement.onload = function() {
+                    // Find the region where the image was dropped
+                    const x = event.offsetX;
+                    const y = event.offsetY;
+
+                    grid.forEach(region => {
+                        if (x > region.x && x < region.x + region.width && y > region.y && y < region.y + region.height) {
+                            ctxFront.drawImage(imgElement, region.x, region.y, region.width, region.height);
+                            updateRosetaCode(region.id, imageId);
+                        }
+                    });
+                };
+            }
+
+            // Event listeners for drag and drop on the canvas
+            frontCanvas.addEventListener('drop', drop);
+            frontCanvas.addEventListener('dragover', allowDrop);
+
+            // Load the gallery when the page loads
+            loadGallery();
+
+            // Add event listener for the "Continue to Checkout" button
+            document.getElementById('continueCheckout').addEventListener('click', function() {
+                // Ensure the latest rsid code is saved
+                localStorage.setItem('rsidCode', rosetaCode);
+                // Redirect to checkout page
+                window.location.href = 'checkout.html';
+            });
+        });
+    </script>
+</body>
+</html>
