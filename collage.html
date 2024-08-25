@@ -3,288 +3,179 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Create Your Collage</title>
-    <style>
-        body {
-            font-family: 'Roboto', sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            background-color: #f4f7f6;
-            margin: 0;
-            padding: 20px;
-        }
-
-        .navbar {
-            background-color: #333;
-            color: white;
-            padding: 15px;
-            width: 100%;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .navbar .logo {
-            font-size: 24px;
-            font-weight: bold;
-        }
-
-        .navbar .nav-links a {
-            color: white;
-            text-decoration: none;
-            margin-left: 20px;
-            font-size: 18px;
-        }
-
-        .collage-container {
-            display: flex;
-            margin-top: 20px;
-        }
-
-        .image-gallery {
-            flex: 1;
-            max-width: 200px;
-            margin-right: 20px;
-            border-right: 1px solid #ddd;
-            padding-right: 20px;
-            overflow-y: auto;
-            max-height: 80vh;
-        }
-
-        .image-gallery h2 {
-            font-size: 20px;
-            margin-bottom: 20px;
-            text-align: center;
-        }
-
-        .image-gallery img {
-            width: 100%;
-            max-width: 150px;
-            cursor: pointer;
-            margin-bottom: 10px;
-            border: 2px solid transparent;
-            padding: 5px;
-            background-color: #fff;
-            transition: border-color 0.3s ease;
-        }
-
-        .image-gallery img:hover {
-            border-color: #007bff;
-        }
-
-        .canvas-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        canvas {
-            border: 1px solid #ccc;
-            background-color: white;
-            margin-bottom: 20px;
-        }
-
-        .button {
-            display: inline-block;
-            padding: 10px 20px;
-            background-color: #007bff;
-            color: white;
-            text-decoration: none;
-            border-radius: 5px;
-            margin-top: 20px;
-            text-align: center;
-            cursor: pointer;
-        }
-
-        .button:hover {
-            background-color: #0056b3;
-        }
-
-        #rosetacodeID {
-            margin-top: 20px;
-            padding: 10px;
-            border: 1px solid #333;
-            background-color: #f9f9f9;
-            width: 100%;
-            text-align: center;
-            font-family: monospace;
-            font-size: 14px;
-        }
-    </style>
+    <title>Collage Maker</title>
+    <link rel="stylesheet" href="base.css">
+    <link rel="stylesheet" href="collage.css">
 </head>
 <body>
+
     <div class="navbar">
         <div class="logo">Photo Collage Maker</div>
         <div class="nav-links">
             <a href="index.html" class="nav-link">Home</a>
             <a href="collage.html" class="nav-link">Create Collage</a>
             <a href="checkout.html" class="nav-link">Checkout</a>
+            <a href="library.html" class="nav-link">Library</a>
         </div>
     </div>
 
-    <div class="collage-container">
-        <!-- Image Library -->
-        <div class="image-gallery">
-            <h2>Image Library</h2>
-            <div id="imageGallery">
-                <!-- Images will be dynamically loaded here -->
-            </div>
-        </div>
+    <div class="sidebar">
+        <h2>Select a Tile</h2>
+        <select id="tileSelector">
+            <option value="" disabled selected>Select a tile</option>
+        </select>
 
-        <!-- Canvas for Front and Back -->
-        <div class="canvas-container">
-            <canvas id="frontCanvas"></canvas>
-            <div id="rosetacodeID">Roseta Code: </div>
-            <button id="continueCheckout" class="button">Continue to Checkout</button>
-        </div>
+        <div id="selectedTilesContainer"></div>
+
+        <div id="rosetacodeID">Roseta Code: </div>
+
+        <button id="clearRSID" class="button clear-button">Clear RSID</button>
+    </div>
+
+    <div class="main-content">
+        <h1>Collage Maker</h1>
+
+        <h2>Front Canvas</h2>
+        <canvas id="frontCanvas" width="1700" height="1100"></canvas>
+
+        <h2>Back Canvas</h2>
+        <canvas id="backCanvas" width="1700" height="1100"></canvas>
+
+        <a href="checkout.html" class="button">Continue to Checkout</a>
     </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const dpi = 96; // Dots per inch
-
-            // Letter size in inches (11" x 8.5") for horizontal orientation
-            const letterWidthInches = 11;
-            const letterHeightInches = 8.5;
-
-            // Canvas dimensions in pixels
-            const canvasWidth = letterWidthInches * dpi;
-            const canvasHeight = letterHeightInches * dpi;
-
-            // Credit card size in inches converted to pixels
-            const cardWidthInches = 3.375;
-            const cardHeightInches = 2.125;
-            const cardWidth = cardWidthInches * dpi;
-            const cardHeight = cardHeightInches * dpi;
-
-            // Canvas
-            const frontCanvas = document.getElementById('frontCanvas');
-
-            // Set canvas dimensions
-            frontCanvas.width = canvasWidth;
-            frontCanvas.height = canvasHeight;
-
-            const ctxFront = frontCanvas.getContext('2d');
-
-            // Roseta code display
+            const tileSelector = document.getElementById('tileSelector');
+            const selectedTilesContainer = document.getElementById('selectedTilesContainer');
             const rosetaCodeElement = document.getElementById('rosetacodeID');
-            let rosetaCode = '';
+            const frontCanvas = document.getElementById('frontCanvas');
+            const backCanvas = document.getElementById('backCanvas');
+            const frontCtx = frontCanvas.getContext('2d');
+            const backCtx = backCanvas.getContext('2d');
+            const clearRSIDButton = document.getElementById('clearRSID');
 
-            // Grid layout based on the provided layout
-            const grid = [
-                { id: 1, x: 0, y: 0, width: 4 * dpi, height: 3 * dpi },   // Top-left
-                { id: 2, x: 4 * dpi, y: 0, width: 4 * dpi, height: 3 * dpi }, // Top-right
-                { id: 3, x: 8 * dpi, y: 0, width: 3 * dpi, height: 3 * dpi }, // Top-right small
-                { id: 4, x: 0, y: 3 * dpi, width: 4 * dpi, height: 3 * dpi },   // Bottom-left
-                { id: 5, x: 4 * dpi, y: 3 * dpi, width: 4 * dpi, height: 3 * dpi }, // Bottom-right
-                { id: 6, x: 8 * dpi, y: 3 * dpi, width: 3 * dpi, height: 3 * dpi }, // Bottom-right small
-                { id: 7, x: 0, y: 6 * dpi, width: 5.5 * dpi, height: 2.5 * dpi }, // Wide bottom-left
-                { id: 8, x: 5.5 * dpi, y: 6 * dpi, width: 5.5 * dpi, height: 2.5 * dpi } // Wide bottom-right
-            ];
+            let selectedTiles = [];
+            let collageCode = '';
 
-            // Function to update the roseta code
-            function updateRosetaCode(regionId, imageId) {
-                // Encode regionId:imageId|regionId:imageId|...
-                const existingEntryIndex = rosetaCode.split('|').findIndex(entry => entry.startsWith(`${regionId}:`));
-                if (existingEntryIndex !== -1) {
-                    // Replace existing entry
-                    const entries = rosetaCode.split('|');
-                    entries[existingEntryIndex] = `${regionId}:${imageId}`;
-                    rosetaCode = entries.join('|');
-                } else {
-                    // Add new entry
-                    if (rosetaCode) {
-                        rosetaCode += `|${regionId}:${imageId}`;
-                    } else {
-                        rosetaCode = `${regionId}:${imageId}`;
-                    }
-                }
-                rosetaCodeElement.textContent = `Roseta Code: ${rosetaCode}`;
-
-                // Store the rsid code in localStorage
-                localStorage.setItem('rsidCode', rosetaCode);
-            }
-
-            // Optional: Background color for the canvases
-            ctxFront.fillStyle = "#fff";
-            ctxFront.fillRect(0, 0, canvasWidth, canvasHeight);
-
-            // Draw each grid cell
-            grid.forEach(region => {
-                ctxFront.strokeStyle = "#000";
-                ctxFront.lineWidth = 1;
-                ctxFront.strokeRect(region.x, region.y, region.width, region.height);
-            });
-
-            // Array of image objects representing the tiles
             const images = [
-                { id: 'img1', src: 'assets/tiles/tile1.png' },
-                { id: 'img2', src: 'assets/tiles/tile2.png' },
-                { id: 'img3', src: 'assets/tiles/tile3.png' },
-                { id: 'img4', src: 'assets/tiles/tile4.png' },
-                { id: 'img5', src: 'assets/tiles/tile5.png' },
-                { id: 'img6', src: 'assets/tiles/tile6.png' },
-                // Add more image objects as needed
+                { id: 'img1', src: 'assets/tiles/tile1.png', name: 'Tile 1' },
+                { id: 'img2', src: 'assets/tiles/tile2.png', name: 'Tile 2' },
+                { id: 'img3', src: 'assets/tiles/tile3.png', name: 'Tile 3' },
+                { id: 'img4', src: 'assets/tiles/tile4.png', name: 'Tile 4' },
+                { id: 'img5', src: 'assets/tiles/tile5.png', name: 'Tile 5' },
+                // Add more images as needed
             ];
 
-            // Function to load the image gallery
-            function loadGallery() {
+            function loadTileSelector() {
                 images.forEach(image => {
-                    const imgElement = document.createElement('img');
-                    imgElement.src = image.src;
-                    imgElement.id = image.id;
-                    imgElement.classList.add('gallery-image');
-                    imgElement.setAttribute('draggable', true);
-                    imgElement.addEventListener('dragstart', dragStart);
-                    imageGallery.appendChild(imgElement);
+                    const option = document.createElement('option');
+                    option.value = image.id;
+                    option.textContent = image.name;
+                    tileSelector.appendChild(option);
                 });
             }
 
-            // Drag and Drop Handlers
-            function allowDrop(event) {
-                event.preventDefault();
+            function updateCollageCode() {
+                collageCode = selectedTiles.map((tile, index) => `${index + 1}:${tile.id}`).join('|');
+                rosetaCodeElement.textContent = `Roseta Code: ${collageCode}`;
+                localStorage.setItem('rsidCode', collageCode);
+                drawCollage(); // Update the canvases each time the code is updated
             }
 
-            function dragStart(event) {
-                event.dataTransfer.setData('text/plain', event.target.id);
-            }
+            function drawCollage() {
+                frontCtx.clearRect(0, 0, frontCanvas.width, frontCanvas.height); // Clear the front canvas
+                backCtx.clearRect(0, 0, backCanvas.width, backCanvas.height); // Clear the back canvas
 
-            function drop(event) {
-                event.preventDefault();
-                const imageId = event.dataTransfer.getData('text/plain');
-                const imgSrc = images.find(img => img.id === imageId).src;
-                const imgElement = new Image();
-                imgElement.src = imgSrc;
-                imgElement.onload = function() {
-                    // Find the region where the image was dropped
-                    const x = event.offsetX;
-                    const y = event.offsetY;
+                const tileWidth = 324; // Credit card width in pixels (3.375 inches * 96 DPI)
+                const tileHeight = 204; // Credit card height in pixels (2.125 inches * 96 DPI)
+                const tilesPerRow = Math.floor(frontCanvas.width / tileWidth);
 
-                    grid.forEach(region => {
-                        if (x > region.x && x < region.x + region.width && y > region.y && y < region.y + region.height) {
-                            ctxFront.drawImage(imgElement, region.x, region.y, region.width, region.height);
-                            updateRosetaCode(region.id, imageId);
+                selectedTiles.forEach((tile, index) => {
+                    const imgElement = new Image();
+                    imgElement.src = tile.src;
+
+                    imgElement.onload = function() {
+                        const x = (index % tilesPerRow) * tileWidth;
+                        const y = Math.floor(index / tilesPerRow) * tileHeight;
+
+                        if (index < tilesPerRow * Math.floor(frontCanvas.height / tileHeight)) {
+                            // Place tile on the front canvas
+                            frontCtx.drawImage(imgElement, x, y, tileWidth, tileHeight);
+                            drawGridLines(frontCtx, x, y, tileWidth, tileHeight); // Draw grid lines around the tile
+                        } else {
+                            // Place tile on the back canvas
+                            const backIndex = index - tilesPerRow * Math.floor(frontCanvas.height / tileHeight);
+                            const backX = (backIndex % tilesPerRow) * tileWidth;
+                            const backY = Math.floor(backIndex / tilesPerRow) * tileHeight;
+                            backCtx.drawImage(imgElement, backX, backY, tileWidth, tileHeight);
+                            drawGridLines(backCtx, backX, backY, tileWidth, tileHeight); // Draw grid lines around the tile
                         }
-                    });
-                };
+                    };
+                });
             }
 
-            // Event listeners for drag and drop on the canvas
-            frontCanvas.addEventListener('drop', drop);
-            frontCanvas.addEventListener('dragover', allowDrop);
+            function drawGridLines(ctx, x, y, width, height) {
+                ctx.strokeStyle = '#333';
+                ctx.lineWidth = 1;
+                ctx.strokeRect(x, y, width, height); // Draw grid lines
+            }
 
-            // Load the gallery when the page loads
-            loadGallery();
+            tileSelector.addEventListener('change', function() {
+                const selectedTileId = tileSelector.value;
+                const selectedTile = images.find(image => image.id === selectedTileId);
 
-            // Add event listener for the "Continue to Checkout" button
-            document.getElementById('continueCheckout').addEventListener('click', function() {
-                // Ensure the latest rsid code is saved
-                localStorage.setItem('rsidCode', rosetaCode);
-                // Redirect to checkout page
-                window.location.href = 'checkout.html';
+                if (selectedTiles.length < 48) {
+                    selectedTiles.push(selectedTile);
+
+                    const imgElement = document.createElement('img');
+                    imgElement.src = selectedTile.src;
+                    selectedTilesContainer.appendChild(imgElement);
+
+                    updateCollageCode();
+                } else {
+                    alert("You have reached the maximum number of tiles (48).");
+                }
+                tileSelector.value = ""; // Reset the dropdown menu
             });
+
+            clearRSIDButton.addEventListener('click', clearRSID);
+
+            function clearRSID() {
+                selectedTiles = [];
+                collageCode = '';
+                selectedTilesContainer.innerHTML = '';
+                rosetaCodeElement.textContent = 'Roseta Code: ';
+                localStorage.removeItem('rsidCode');
+                frontCtx.clearRect(0, 0, frontCanvas.width, frontCanvas.height); // Clear the front canvas
+                backCtx.clearRect(0, 0, backCanvas.width, backCanvas.height); // Clear the back canvas
+            }
+
+            loadTileSelector();
+
+            const storedRosetaCode = localStorage.getItem('rsidCode');
+            if (storedRosetaCode) {
+                collageCode = storedRosetaCode;
+                rosetaCodeElement.textContent = `Roseta Code: ${collageCode}`;
+
+                const tilePairs = collageCode.split('|');
+                tilePairs.forEach(pair => {
+                    const [index, tileId] = pair.split(':');
+                    const tile = images.find(image => image.id === tileId);
+                    if (tile) {
+                        selectedTiles.push(tile);
+                        const imgElement = document.createElement('img');
+                        imgElement.src = tile.src;
+                        selectedTilesContainer.appendChild(imgElement);
+                    }
+                });
+
+                drawCollage(); // Draw the collage based on the stored Roseta code
+            }
         });
     </script>
+
 </body>
 </html>
+
+
