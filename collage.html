@@ -6,6 +6,8 @@
     <title>Collage Maker</title>
     <link rel="stylesheet" href="base.css">
     <link rel="stylesheet" href="collage.css">
+    <script src="collage.js"></script>
+
 </head>
 <body>
 
@@ -13,7 +15,7 @@
         <div class="logo">Photo Collage Maker</div>
         <div class="nav-links">
             <a href="index.html" class="nav-link">Home</a>
-            <a href="collage.html" class="nav-link">Create Collage</a>
+            <a href="collage.html" class="nav-link active">Create Collage</a>
             <a href="checkout.html" class="nav-link">Checkout</a>
             <a href="library.html" class="nav-link">Library</a>
         </div>
@@ -59,12 +61,53 @@
             let collageCode = '';
 
             const images = [
-                { id: 'img1', src: 'assets/tiles/tile1.png', name: 'Tile 1' },
-                { id: 'img2', src: 'assets/tiles/tile2.png', name: 'Tile 2' },
-                { id: 'img3', src: 'assets/tiles/tile3.png', name: 'Tile 3' },
-                { id: 'img4', src: 'assets/tiles/tile4.png', name: 'Tile 4' },
-                { id: 'img5', src: 'assets/tiles/tile5.png', name: 'Tile 5' },
-                // Add more images as needed
+                { id: 'tl1', src: 'assets/tiles/tl1 volume & capacity.png', name: 'volume & capacity' },
+                { id: 'tl2', src: 'assets/tiles/tl2 weight+mass.png', name: 'weight+mass' },
+                { id: 'tl3', src: 'assets/tiles/tl3 time.png', name: 'time' },
+                { id: 'tl4', src: 'assets/tiles/tl4 speed.png', name: 'speed' },
+                { id: 'tl5', src: 'assets/tiles/tl5 power.png', name: 'power' },
+                { id: 'tl6', src: 'assets/tiles/tl6 energy.png', name: 'energy' },
+                { id: 'tl7', src: 'assets/tiles/tl7 digital storage.png', name: 'digital storage' },
+                { id: 'tl8', src: 'assets/tiles/tl8 power.png', name: 'power' },
+                { id: 'tl9', src: 'assets/tiles/tl9 pressure.png', name: 'pressure' },
+                { id: 'tl10', src: 'assets/tiles/tl10 angles.png', name: 'angles' },
+                { id: 'tl11', src: 'assets/tiles/tl11 currency.png', name: 'currency' },
+                { id: 'tl12', src: 'assets/tiles/tl12 cooking.png', name: 'cooking' },
+                { id: 'tl13', src: 'assets/tiles/tl13 constitutional law.png', name: 'constitutional law' },
+                { id: 'tl14', src: 'assets/tiles/tl14 contract law.png', name: 'contract law' },
+                { id: 'tl15', src: 'assets/tiles/tl15 criminal law.png', name: 'criminal law' },
+                { id: 'tl16', src: 'assets/tiles/tl16 business law.png', name: 'business law' },
+                { id: 'tl17', src: 'assets/tiles/tl17 property law.png', name: 'property law' },
+                { id: 'tl18', src: 'assets/tiles/tl18 tort law.png', name: 'tort law' },
+                { id: 'tl19', src: 'assets/tiles/tl19 software development.png', name: 'software development' },
+                { id: 'tl20', src: 'assets/tiles/tl20 cybersecurity.png', name: 'cybersecurity' },
+                { id: 'tl21', src: 'assets/tiles/tl21 networking basics.png', name: 'networking basics' },
+                { id: 'tl22', src: 'assets/tiles/tl22 computer architecture.png', name: 'computer architecture' },
+                { id: 'tl23', src: 'assets/tiles/tl23 common algorithms.png', name: 'common algorithms' },
+                { id: 'tl24', src: 'assets/tiles/tl24 data structures.png', name: 'data structures' },
+                { id: 'tl25', src: 'assets/tiles/tl25 basic programming concepts.png', name: 'basic programming concepts' },
+                { id: 'tl26', src: 'assets/tiles/tl26 cognitive biases.png', name: 'cognitive biases' },
+                { id: 'tl27', src: 'assets/tiles/tl27 learning theories.png', name: 'learning theories' },
+                { id: 'tl28', src: 'assets/tiles/tl28 mental health disorders.png', name: 'mental health disorders' },
+                { id: 'tl29', src: 'assets/tiles/tl29 therapeutic approaches.png', name: 'therapeutic approaches' },
+                { id: 'tl30', src: 'assets/tiles/tl30 syntax.png', name: 'syntax' },
+                { id: 'tl31', src: 'assets/tiles/tl31 phonetics.png', name: 'phonetics' },
+                { id: 'tl32', src: 'assets/tiles/tl32 morphology.png', name: 'morphology' },
+                { id: 'tl33', src: 'assets/tiles/tl33 semantics.png', name: 'semantics' },
+                { id: 'tl34', src: 'assets/tiles/tl34 pragmatics.png', name: 'pragmatics' },
+                { id: 'tl35', src: 'assets/tiles/tl35 advanced vocabulary.png', name: 'advanced vocabulary' },
+                { id: 'tl36', src: 'assets/tiles/tl36 business vocabulary.png', name: 'business vocabulary' },
+                { id: 'tl37', src: 'assets/tiles/tl37 academic vocabulary.png', name: 'academic vocabulary' },
+                { id: 'tl38', src: 'assets/tiles/tl38 common suffixes.png', name: 'common suffixes' },
+                { id: 'tl39', src: 'assets/tiles/tl39 cooking techniques.png', name: 'cooking techniques' },
+                { id: 'tl40', src: 'assets/tiles/tl40 nutrition macronutrients.png', name: 'nutrition macronutrients' },
+                { id: 'tl41', src: 'assets/tiles/tl41 herbs & spices.png', name: 'herbs & spices' },
+                { id: 'tl42', src: 'assets/tiles/tl42 dietary requirements.png', name: 'dietary requirements' },
+                { id: 'tl43', src: 'assets/tiles/tl43 holy days.png', name: 'holy days' },
+                { id: 'tl44', src: 'assets/tiles/tl44 10 commandments.png', name: '10 commandments' },
+                { id: 'tl45', src: 'assets/tiles/tl45 the beatitudes.png', name: 'the beatitudes' },
+                { id: 'tl46', src: 'assets/tiles/tl46 the fruit of the spirit.png', name: 'the fruit of the spirit' },
+                { id: 'tl47', src: 'assets/tiles/tl47 the lords prayer.png', name: 'the lords prayer' }
             ];
 
             function loadTileSelector() {
@@ -177,5 +220,3 @@
 
 </body>
 </html>
-
-

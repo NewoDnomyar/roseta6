@@ -128,8 +128,6 @@
             emailjs.init('F3aEsyBhkvDJxHRZN'); // Replace with your actual EmailJS public key
         })();
     </script>
-    <!-- PayPal SDK -->
-    <script src="https://www.paypal.com/sdk/js?client-id=YOUR_PAYPAL_CLIENT_ID"></script> <!-- Replace YOUR_PAYPAL_CLIENT_ID with your PayPal client ID -->
 </head>
 <body>
     <div class="navbar">
@@ -196,43 +194,22 @@
                     .then(function(response) {
                         console.log('SUCCESS!', response.status, response.text);
                         alert('Your order has been placed and a confirmation email has been sent!');
+                        // Redirect to PayPal after email is sent
+                        window.location.href = 'https://www.paypal.com/ncp/payment/YZNNEA5TEYYFC';
                     }, function(error) {
                         console.log('FAILED...', error);
                         alert('There was an error placing your order. Please try again.');
                     });
             }
 
-            // PayPal Buttons integration
-            if (typeof paypal !== 'undefined') {
-                paypal.Buttons({
-                    createOrder: function(data, actions) {
-                        return actions.order.create({
-                            purchase_units: [{
-                                amount: {
-                                    value: '6.73' // Replace with the actual price
-                                }
-                            }]
-                        });
-                    },
-                    onApprove: function(data, actions) {
-                        return actions.order.capture().then(function(details) {
-                            alert('Transaction completed by ' + details.payer.name.given_name);
-                            sendEmail(); // Send the email after the PayPal payment is approved
-                        });
-                    }
-                }).render('#paypal-button-container'); // Display PayPal button
-            } else {
-                console.error("PayPal SDK not loaded.");
-            }
-
-            // For testing without PayPal payment
+            // Handle Test Order button click to send email and redirect to PayPal
             document.getElementById('testButton').addEventListener('click', function(event) {
                 event.preventDefault();
-                sendEmail(); // Test sending the email without PayPal payment
-                alert('Test order processed. No payment was made.');
+                sendEmail(); // Send the email and then redirect to PayPal
             });
 
             // Automatically handle form submission when the form is directly submitted
+            const checkoutForm = document.getElementById('checkoutForm');
             checkoutForm.addEventListener('submit', function(event) {
                 event.preventDefault();
                 sendEmail(); // Ensure email is sent on form submission
